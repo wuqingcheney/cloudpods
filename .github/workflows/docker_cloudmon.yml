@@ -18,25 +18,25 @@ jobs:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 8
-        
+
     - uses: actions/setup-go@v4
       with:
         go-version: '1.25'
-        
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
-      
+
     - name: Set up Docker Buildx
       id: buildx
       uses: docker/setup-buildx-action@v2
-      
-    - name: Login to Aliyun Container Registry (ACR)
+
+    - name: Login to Huawei Cloud SWR
       uses: docker/login-action@v2
       with:
-        registry: https://registry.us-west-1.aliyuncs.com
-        username: ${{ secrets.ACR_USERNAME }}
-        password: ${{ secrets.ACR_PASSWORD }}
-        
+        registry: swr.cn-north-4.myhuaweicloud.com
+        username: ${{ secrets.SWR_USERNAME }}
+        password: ${{ secrets.SWR_PASSWORD }}
+
     - name: Build And Push Docker Image
       shell: bash
       run: |
@@ -46,6 +46,6 @@ jobs:
           timestamp=`TZ="Asia/Shanghai" date +"%Y%m%d%H%M%S"`
           export VERSION="$branch-$timestamp-solo"
           export GOOS=linux
-          export ARCH=all
-          export REGISTRY=registry.us-west-1.aliyuncs.com/yunion-dev
+          export ARCH=amd64
+          export REGISTRY=swr.cn-north-4.myhuaweicloud.com/iiecas-ziheng
           make image cloudmon
