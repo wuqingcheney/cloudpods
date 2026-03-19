@@ -1,6 +1,7 @@
 name: Apigateway Docker Image
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - 'releases/**'

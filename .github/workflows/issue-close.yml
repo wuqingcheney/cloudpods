@@ -1,6 +1,7 @@
 name: Issue Close Check
 
 on:
+  workflow_dispatch:
   issues:
     types: [closed]
 

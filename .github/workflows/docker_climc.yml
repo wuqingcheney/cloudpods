@@ -1,6 +1,7 @@
 name: Climc Docker Image
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - 'releases/**'
