@@ -46,5 +46,6 @@ jobs:
           export VERSION="$branch-$timestamp-solo"
           export GOOS=linux
           export ARCH=amd64
+          export BUILDX_NO_DEFAULT_ATTESTATIONS=1
           export REGISTRY=swr.cn-north-4.myhuaweicloud.com/iiecas-ziheng
           make image climc
