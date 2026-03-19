@@ -775,4 +775,68 @@ func init() {
 		printObject(result)
 		return nil
 	})
+
+	// CasIAM (统一身份认证) OAuth2.0 授权码模式
+	type IdentityProviderCreateCasIAMOAuth2Options struct {
+		NAME string `help:"name of identity provider" json:"name"`
+
+		api.SCasIAMOAuth2ConfigOptions
+
+		TargetDomain        string `help:"target domain without creating new domain" json:"-"`
+		AutoCreateProject   bool   `help:"automatically create project on first login" negative:"no-auto-create-project"`
+		AutoCreateUser      bool   `help:"automatically create user on first login" negative:"no-auto-create-user"`
+	}
+	R(&IdentityProviderCreateCasIAMOAuth2Options{}, "idp-create-casiam-oauth2", "Create an identity provider with unified identity auth (统一身份认证) OAuth2.0", func(s *mcclient.ClientSession, args *IdentityProviderCreateCasIAMOAuth2Options) error {
+		conf := api.SOAuth2IdpConfigOptions{
+			AppId:  args.AppId,
+			Secret: args.Secret,
+			SIdpAttributeOptions: args.SIdpAttributeOptions,
+		}
+		params := jsonutils.NewDict()
+		params.Add(jsonutils.NewString(args.NAME), "name")
+		params.Add(jsonutils.NewString("oauth2"), "driver")
+		params.Add(jsonutils.NewString(api.IdpTemplateCasIAM), "template")
+		if len(args.TargetDomain) > 0 {
+			params.Add(jsonutils.NewString(args.TargetDomain), "target_domain")
+		}
+		if args.AutoCreateProject {
+			params.Add(jsonutils.JSONTrue, "auto_create_project")
+		}
+		if args.AutoCreateUser {
+			params.Add(jsonutils.JSONTrue, "auto_create_user")
+		}
+		// store sso_endpoint in the oauth2 config section
+		confDict := jsonutils.Marshal(conf).(*jsonutils.JSONDict)
+		confDict.Add(jsonutils.NewString(args.SsoEndpoint), "sso_endpoint")
+		params.Add(confDict, "config", "oauth2")
+		idp, err := modules.IdentityProviders.Create(s, params)
+		if err != nil {
+			return err
+		}
+		printObject(idp)
+		return nil
+	})
+
+	type IdentityProviderConfigCasIAMOAuth2Options struct {
+		ID string `help:"ID or name of identity provider" json:"-"`
+
+		api.SCasIAMOAuth2ConfigOptions
+	}
+	R(&IdentityProviderConfigCasIAMOAuth2Options{}, "idp-config-casiam-oauth2", "Configure unified identity auth (统一身份认证) OAuth2.0 identity provider", func(s *mcclient.ClientSession, args *IdentityProviderConfigCasIAMOAuth2Options) error {
+		conf := api.SOAuth2IdpConfigOptions{
+			AppId:  args.AppId,
+			Secret: args.Secret,
+			SIdpAttributeOptions: args.SIdpAttributeOptions,
+		}
+		confDict := jsonutils.Marshal(conf).(*jsonutils.JSONDict)
+		confDict.Add(jsonutils.NewString(args.SsoEndpoint), "sso_endpoint")
+		config := jsonutils.NewDict()
+		config.Add(confDict, "config", "oauth2")
+		nconf, err := modules.IdentityProviders.PerformAction(s, args.ID, "config", config)
+		if err != nil {
+			return err
+		}
+		fmt.Println(nconf.PrettyString())
+		return nil
+	})
 }

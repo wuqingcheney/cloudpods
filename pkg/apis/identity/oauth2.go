@@ -21,3 +21,15 @@ type SOAuth2IdpConfigOptions struct {
 
 	SIdpAttributeOptions
 }
+
+// SCasIAMOAuth2ConfigOptions 统一身份认证系统 OAuth2.0 授权码模式配置
+type SCasIAMOAuth2ConfigOptions struct {
+	// 应用系统编码 (client_id)
+	AppId string `json:"app_id" help:"Client ID assigned by the unified identity auth system" required:"true"`
+	// 应用系统密钥 (client_secret)
+	Secret string `json:"secret" help:"Client secret assigned by the unified identity auth system" required:"true"`
+	// 统一身份认证服务地址，例如 http://10.25.0.17
+	SsoEndpoint string `json:"sso_endpoint" help:"Base URL of the unified identity auth SSO service, e.g. http://10.25.0.17" required:"true"`
+
+	SIdpAttributeOptions
+}

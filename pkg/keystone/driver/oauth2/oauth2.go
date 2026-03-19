@@ -116,6 +116,16 @@ func (self *SOAuth2Driver) Authenticate(ctx context.Context, ident mcclient.SAut
 		return nil, errors.Wrap(err, "models.UserManager.FetchUserExtended")
 	}
 
+	// 如果驱动实现了 IOAuth2RoleSyncer，在重新分配角色前先清理旧角色，
+	// 确保外部系统撤销角色后本地同步生效。
+	if roleSyncer, ok := driver.(IOAuth2RoleSyncer); ok {
+		projectId := options.DefaultProjectId
+		if len(projectId) > 0 {
+			if err := roleSyncer.ClearUserProjectRoles(ctx, usr.Id, projectId); err != nil {
+				log.Warningf("ClearUserProjectRoles user %s project %s fail: %s", usr.Name, projectId, err)
+			}
+		}
+	}
 	idp.TryUserJoinProject(options, ctx, usr, domain.Id, attrs)
 
 	extUser.AuditIds = []string{ident.OAuth2.Code}

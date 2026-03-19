@@ -32,6 +32,12 @@ type IOAuth2Driver interface {
 	GetSsoRedirectUri(ctx context.Context, callbackUrl, state string) (string, error)
 }
 
+// IOAuth2RoleSyncer 可选接口，驱动实现后，登录时会在 TryUserJoinProject 之前
+// 先清除用户在指定项目下的所有旧角色，再由框架重新分配，实现角色撤销同步。
+type IOAuth2RoleSyncer interface {
+	ClearUserProjectRoles(ctx context.Context, userId, projectId string) error
+}
+
 type IOAuth2Synchronizer interface {
 	Sync(ctx context.Context, idpId string) error
 }

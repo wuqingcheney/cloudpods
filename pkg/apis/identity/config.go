@@ -103,6 +103,7 @@ const (
 	IdpTemplateFeishu   = "feishu_oauth2"
 	IdpTemplateQywechat = "qywechat_oauth2"
 	IdpTemplateBingoIAM = "bingoiam_oauth2"
+	IdpTemplateCasIAM   = "casiam_oauth2"
 )
 
 var (
@@ -125,6 +126,7 @@ var (
 		IdpTemplateWechat:   IdentityDriverOAuth2,
 		IdpTemplateQywechat: IdentityDriverOAuth2,
 		IdpTemplateBingoIAM: IdentityDriverOAuth2,
+		IdpTemplateCasIAM:   IdentityDriverOAuth2,
 	}
 )
 

@@ -562,6 +562,11 @@ func (manager *SAssignmentManager) remove(typeStr, actorId, projectId, roleId st
 	return nil
 }
 
+// RemoveUserProjectRole 从项目中移除用户的指定角色，供 IDP 驱动在登录时同步角色使用。
+func (manager *SAssignmentManager) RemoveUserProjectRole(userId, projectId, roleId string) error {
+	return manager.remove(api.AssignmentUserProject, userId, projectId, roleId)
+}
+
 func (manager *SAssignmentManager) add(ctx context.Context, typeStr, actorId, projectId, roleId string) error {
 	assign := SAssignment{
 		Type:      typeStr,

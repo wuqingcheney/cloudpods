@@ -49,6 +49,8 @@ func (self *SOAuth2DriverClass) GetDefaultIconUri(tmpName string) string {
 		return "https://open.weixin.qq.com/zh_CN/htmledition/res/assets/res-design-download/icon64_appwx_logo.png"
 	case api.IdpTemplateQywechat:
 		return "http://yunioniso.oss-cn-beijing.aliyuncs.com/icons/qywechat_logo.png"
+	case api.IdpTemplateCasIAM:
+		return ""
 	}
 	return "https://st.fbk.eu/sites/st.fbk.eu/files/styles/threshold-1382/public/oauth2-logo.jpg"
 }
