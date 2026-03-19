@@ -42,6 +42,11 @@ type SVpcPeering struct {
 	Name           string         `json:"name"`
 	ID             string         `json:"id"`
 	Status         string         `json:"status"`
+	// [CHANGED] HCS 8.6.0 新增字段
+	// [ORIGIN] 原始结构体无以下字段
+	Description string `json:"description"` // 对等连接描述
+	CreatedAt   string `json:"created_at"`  // 创建时间
+	UpdatedAt   string `json:"updated_at"`  // 更新时间
 }
 
 func (self *SRegion) GetVpcPeerings(vpcId string) ([]SVpcPeering, error) {

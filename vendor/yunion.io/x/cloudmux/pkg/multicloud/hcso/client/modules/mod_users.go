@@ -33,7 +33,9 @@ func NewUserManager(cfg manager.IManagerConfig) *SUserManager {
 		ServiceName:   ServiceNameIAM,
 		Region:        cfg.GetRegionId(),
 		ProjectId:     "",
-		version:       "v3.0/OS-USER",
+		// [ORIGIN] 原始版本为 "v3.0/OS-USER"，与 HCS 8.6.0 IAM 2.0 文档不符
+		// [CHANGED] HCS 8.6.0 IAM 用户管理接口路径为 /v3/users，统一改为 v3
+		version:       "v3",
 		Keyword:       "user",
 		KeywordPlural: "users",
 
@@ -44,12 +46,12 @@ func NewUserManager(cfg manager.IManagerConfig) *SUserManager {
 }
 
 func (self *SUserManager) List(querys map[string]string) (*responses.ListResult, error) {
-	self.SetVersion("v3")
+	// [ORIGIN] 原需临时 SetVersion("v3")，现默认已是 v3，无需重复设置
 	return self.SResourceManager.List(querys)
 }
 
 func (self *SUserManager) Delete(id string) (jsonutils.JSONObject, error) {
-	self.SetVersion("v3")
+	// [ORIGIN] 原需临时 SetVersion("v3")，现默认已是 v3，无需重复设置
 	return self.SResourceManager.Delete(id, nil)
 }
 
@@ -64,6 +66,6 @@ func (self *SUserManager) ResetPassword(id, password string) error {
 }
 
 func (self *SUserManager) ListGroups(userId string) (*responses.ListResult, error) {
-	self.SetVersion("v3")
+	// [ORIGIN] 原需临时 SetVersion("v3")，现默认已是 v3，无需重复设置
 	return self.SResourceManager.ListInContextWithSpec(nil, fmt.Sprintf("%s/groups", userId), nil, "groups")
 }

@@ -60,6 +60,8 @@ type DiskMeta struct {
 	ResourceType     string `json:"resourceType"`
 	AttachedMode     string `json:"attached_mode"`
 	Readonly         string `json:"readonly"`
+	// [CHANGED] HCS 8.6.0 新增：磁盘设备类型，true=SCSI，false/缺省=VBD
+	HwPassthrough string `json:"hw:passthrough"`
 }
 
 type VolumeImageMetadata struct {
@@ -86,6 +88,10 @@ type VolumeImageMetadata struct {
 	Isregistered           string `json:"__isregistered"`
 	HwVifMultiqueueEnabled string `json:"hw_vif_multiqueue_enabled"`
 	Platform               string `json:"__platform"`
+	// [CHANGED] HCS 8.6.0 新增：镜像CPU架构，取值 x86_64 或 aarch64
+	Architecture string `json:"architecture"`
+	// [CHANGED] HCS 8.6.0 新增：固件类型，取值 bios 或 uefi
+	HwFirmwareType string `json:"hw_firmware_type"`
 }
 
 // https://support.huaweicloud.com/api-evs/zh-cn_topic_0124881427.html
@@ -116,6 +122,13 @@ type SDisk struct {
 	ConsistencygroupID  string              `json:"consistencygroup_id"`
 	UpdatedAt           string              `json:"updated_at"`
 	EnterpriseProjectId string
+	// [CHANGED] HCS 8.6.0 新增/补充字段
+	// [ORIGIN] 原始结构体无以下字段
+	Shareable          string `json:"shareable"`            // 是否为可共享云硬盘（字符串类型 "true"/"false"）
+	OsVolHostAttrHost  string `json:"os-vol-host-attr:host"` // 云硬盘所在主机
+	OsVolTenantAttrTenantId string `json:"os-vol-tenant-attr:tenant_id"` // 所属租户ID
+	OsVolMigStatusAttrMigstat string `json:"os-vol-mig-status-attr:migstat"` // 迁移状态
+	EncryptionInfo     interface{} `json:"encryption_info"`   // 云硬盘主机侧加密信息
 
 	ExpiredTime time.Time
 }
@@ -265,10 +278,17 @@ func (self *SDisk) GetIsNonPersistent() bool {
 }
 
 func (self *SDisk) GetDriver() string {
-	// https://support.huaweicloud.com/api-evs/zh-cn_topic_0058762431.html
-	// scsi or vbd?
-	// todo: implement me
-	return "scsi"
+	// [ORIGIN] 原始代码硬编码返回 "scsi"
+	// return "scsi"
+	// [CHANGED] HCS 8.6.0 通过 metadata 中 hw:passthrough 字段判断磁盘类型：
+	// true=SCSI，false/缺省=VBD(virtio)
+	if strings.ToLower(self.Metadata.HwPassthrough) == "true" {
+		return "scsi"
+	}
+	if self.Metadata.AttachedMode == "scsi" {
+		return "scsi"
+	}
+	return "virtio"
 }
 
 func (self *SDisk) GetCacheMode() string {

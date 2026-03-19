@@ -47,6 +47,12 @@ type Bandwidth struct {
 	ChargeMode          string         `json:"charge_mode"`
 	BillingInfo         string         `json:"billing_info"`
 	EnterpriseProjectID string         `json:"enterprise_project_id"`
+	// [CHANGED] HCS 8.6.0 新增字段
+	Description string `json:"description"` // 带宽描述
+	Shared      bool   `json:"shared"`      // 是否租户级别资源
+	RuleType    string `json:"rule_type"`   // 带宽类型
+	Direction   string `json:"direction"`   // 限速模式：egress/bidirectional
+	Status      string `json:"status"`      // 带宽状态
 }
 
 type PublicipInfo struct {
@@ -86,6 +92,16 @@ type SEipAddress struct {
 	IPVersion           int64     `json:"ip_version"`
 	PortId              string    `json:"port_id"`
 	EnterpriseProjectId string
+	// [CHANGED] HCS 8.6.0 新增字段
+	// [ORIGIN] 原始结构体无以下字段
+	ProjectID         string `json:"project_id"`          // 项目ID
+	CreatedAt         string `json:"created_at"`          // 创建时间（新格式，与 create_time 并存）
+	UpdatedAt         string `json:"updated_at"`          // 更新时间
+	BandwidthDirection string `json:"bandwidth_direction"` // 带宽限速模式：egress/bidirectional
+	RouterID          string `json:"router_id"`           // 关联路由ID
+	ExternalNetID     string `json:"external_net_id"`     // 外部网络ID
+	OpStatus          int64  `json:"op_status"`           // 运营状态
+	Expiry            string `json:"expiry"`              // 到期时间
 }
 
 func (self *SEipAddress) GetId() string {
@@ -109,6 +125,9 @@ func (self *SEipAddress) GetStatus() string {
 	switch self.Status {
 	case "ACTIVE", "DOWN", "ELB":
 		return api.EIP_STATUS_READY
+	// [CHANGED] HCS 8.6.0 新增 FREEZED 状态（实例被冻结）
+	case "FREEZED":
+		return api.EIP_STATUS_UNKNOWN
 	case "PENDING_CREATE", "NOTIFYING":
 		return api.EIP_STATUS_ALLOCATE
 	case "BINDING":

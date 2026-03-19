@@ -97,6 +97,16 @@ type SDBInstance struct {
 	Volume              SVolume
 	VpcId               string
 	EnterpriseProjectId string
+	// [CHANGED] HCS 8.6.0 新增字段
+	// [ORIGIN] 原始结构体无以下字段
+	Alias            string      `json:"alias"`              // 实例备注信息
+	PrivateDnsNames  []string    `json:"private_dns_names"`  // 实例内网域名列表
+	EnableSsl        bool        `json:"enable_ssl"`         // 是否开启SSL
+	Cpu              string      `json:"cpu"`                // CPU大小
+	Mem              string      `json:"mem"`                // 内存大小(GB)
+	ReadOnlyByUser   bool        `json:"read_only_by_user"`  // 用户设置的只读状态
+	ChargeInfo       interface{} `json:"charge_info"`        // 计费信息
+	AssociatedWithDdm bool       `json:"associated_with_ddm"` // 是否已被DDM实例关联
 }
 
 func (region *SRegion) GetDBInstances() ([]SDBInstance, error) {
@@ -157,6 +167,12 @@ func (rds *SDBInstance) GetStatus() string {
 		return api.DBINSTANCE_MIGRATING
 	case "BACKING UP":
 		return api.DBINSTANCE_BACKING_UP
+	// [CHANGED] HCS 8.6.0 新增状态
+	// [ORIGIN] 原始代码无以下状态处理
+	case "CREATE FAIL":
+		return api.DBINSTANCE_CREATE_FAILED
+	case "STOPPED":
+		return api.DBINSTANCE_MAINTENANCE
 	}
 	return rds.Status
 }

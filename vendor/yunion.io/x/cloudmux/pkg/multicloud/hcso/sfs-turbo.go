@@ -56,6 +56,17 @@ type SfsTurbo struct {
 	SubnetId            string
 	VpcId               string
 	Description         string
+	// [CHANGED] HCS 8.6.0 新增字段
+	// [ORIGIN] 原始结构体无以下字段
+	Version          string `json:"version"`           // 文件系统版本号
+	Bandwidth        int    `json:"bandwidth"`         // 文件系统总带宽，单位：MB/s
+	OptionalEndpoint string `json:"optional_endpoint"` // 可选的挂载IP地址
+	Scenario         string `json:"scenario"`          // 文件系统场景：HCS/HCSStandard
+	ExactShareType   string `json:"exact_share_type"`  // 文件系统详细规格
+	Ownership        string `json:"ownership"`         // 文件系统所属云服务名称
+	InstanceId       string `json:"instanceId"`        // 节点id（预留字段）
+	InstanceType     string `json:"instanceType"`      // 节点类型（预留字段）
+	StatusDetail     string `json:"statusDetail"`      // 请求ID（预留字段）
 }
 
 func (self *SfsTurbo) GetName() string {

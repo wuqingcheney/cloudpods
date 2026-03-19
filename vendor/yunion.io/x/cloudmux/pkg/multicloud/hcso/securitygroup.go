@@ -35,6 +35,12 @@ type SSecurityGroup struct {
 	Description         string              `json:"description"`
 	EnterpriseProjectID string              `json:"enterprise_project_id "`
 	SecurityGroupRules  []SecurityGroupRule `json:"security_group_rules"`
+	// [CHANGED] HCS 8.6.0 新增字段
+	// [ORIGIN] 原始结构体无以下字段
+	ProjectID string   `json:"project_id"` // 资源所属项目ID
+	CreatedAt string   `json:"created_at"` // 创建时间
+	UpdatedAt string   `json:"updated_at"` // 更新时间
+	SysTags   []string `json:"sys_tags"`   // 系统标签
 }
 
 func (self *SSecurityGroup) GetId() string {

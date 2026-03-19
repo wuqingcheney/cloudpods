@@ -51,6 +51,11 @@ type SNetwork struct {
 	SecondaryDNS     string   `json:"secondary_dns"`
 	Status           string   `json:"status"`
 	VpcID            string   `json:"vpc_id"`
+	// [CHANGED] HCS 8.6.0 新增字段
+	// [ORIGIN] 原始结构体无以下字段
+	Description    string `json:"description"`     // 子网描述信息
+	Ipv6CidrBlock  string `json:"cidr_v6"`         // IPv6 网段
+	Ipv6GatewayIP  string `json:"gateway_ip_v6"`   // IPv6 网关
 }
 
 func (self *SNetwork) GetId() string {

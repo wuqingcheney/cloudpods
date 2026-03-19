@@ -42,6 +42,14 @@ type OSExtraSpecs struct {
 	EcsPerformancetype      string `json:"ecs:performancetype"`
 	EcsGeneration           string `json:"ecs:generation"`
 	EcsInstanceArchitecture string `json:"ecs:instance_architecture"`
+	// [CHANGED] HCS 8.6.0 新增/补充字段
+	// [ORIGIN] 原始结构体无以下字段
+	ResourceType              string `json:"resource_type"`                // 资源类型
+	EcsVirtualizationEnvTypes string `json:"ecs:virtualization_env_types"`  // 虚拟化类型：FusionCompute(XEN) 或 CloudCompute(KVM)
+	CapabilitiesCpuInfoArch   string `json:"capabilities:cpu_info:arch"`   // CPU架构，如 x86_64、aarch64
+	HwCpuMode                 string `json:"hw:cpu_mode"`                  // CPU模式
+	HwCpuModel                string `json:"hw:cpu_model"`                 // CPU型号
+	PciPassthroughAlias       string `json:"pci_passthrough:alias"`        // 本地直通GPU型号和数量
 }
 
 var FLAVOR_FAMILY_CATEGORY_MAP = map[string]string{
@@ -175,6 +183,17 @@ func (self *SInstanceType) GetPostpaidStatus() string {
 // https://support.huaweicloud.com/productdesc-ecs/ecs_01_0066.html
 // https://support.huaweicloud.com/ecs_faq/ecs_faq_0105.html
 func (self *SInstanceType) GetCpuArch() string {
+	// [CHANGED] HCS 8.6.0 新增 capabilities:cpu_info:arch 字段，优先使用（取值 x86_64 或 aarch64）
+	// [ORIGIN] 原始逻辑仅通过 ecs:instance_architecture 和 flavor ID 前缀判断
+	if len(self.OSExtraSpecs.CapabilitiesCpuInfoArch) > 0 {
+		switch strings.ToLower(self.OSExtraSpecs.CapabilitiesCpuInfoArch) {
+		case "aarch64", "arm64", "arm":
+			return apis.OS_ARCH_AARCH64
+		case "x86_64", "x86", "amd64":
+			return apis.OS_ARCH_X86_64
+		}
+	}
+
 	if len(self.OSExtraSpecs.EcsInstanceArchitecture) > 0 {
 		if strings.ToLower(self.OSExtraSpecs.EcsInstanceArchitecture) == "arm64" {
 			return apis.OS_ARCH_AARCH64

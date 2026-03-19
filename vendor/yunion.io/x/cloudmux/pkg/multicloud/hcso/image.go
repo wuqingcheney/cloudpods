@@ -60,43 +60,51 @@ type SImage struct {
 	// normalized image info
 	imgInfo *imagetools.ImageInfo
 
-	Schema                 string    `json:"schema"`
-	MinDiskGB              int64     `json:"min_disk"`
-	CreatedAt              time.Time `json:"created_at"`
-	ImageSourceType        string    `json:"__image_source_type"`
-	ContainerFormat        string    `json:"container_format"`
-	File                   string    `json:"file"`
-	UpdatedAt              time.Time `json:"updated_at"`
-	Protected              bool      `json:"protected"`
-	Checksum               string    `json:"checksum"`
-	ID                     string    `json:"id"`
-	Isregistered           string    `json:"__isregistered"`
-	MinRamMB               int       `json:"min_ram"`
-	Lazyloading            string    `json:"__lazyloading"`
-	Owner                  string    `json:"owner"`
-	OSType                 string    `json:"__os_type"`
-	Imagetype              string    `json:"__imagetype"`
-	Visibility             string    `json:"visibility"`
-	VirtualEnvType         string    `json:"virtual_env_type"`
-	Platform               string    `json:"__platform"`
-	SizeGB                 int       `json:"size"`
-	ImageSize              int64     `json:"__image_size"`
-	OSBit                  string    `json:"__os_bit"`
-	OSVersion              string    `json:"__os_version"`
-	Name                   string    `json:"name"`
-	Self                   string    `json:"self"`
-	DiskFormat             string    `json:"disk_format"`
-	Status                 string    `json:"status"`
-	SupportKVMFPGAType     string    `json:"__support_kvm_fpga_type"`
-	SupportKVMNVMEHIGHIO   string    `json:"__support_nvme_highio"`
-	SupportLargeMemory     string    `json:"__support_largememory"`
-	SupportDiskIntensive   string    `json:"__support_diskintensive"`
-	SupportHighPerformance string    `json:"__support_highperformance"`
-	SupportXENGPUType      string    `json:"__support_xen_gpu_type"`
-	SupportKVMGPUType      string    `json:"__support_kvm_gpu_type"`
-	SupportGPUT4           string    `json:"__support_gpu_t4"`
-	SupportKVMAscend310    string    `json:"__support_kvm_ascend_310"`
-	SupportArm             string    `json:"__support_arm"`
+	Schema          string    `json:"schema"`
+	MinDiskGB       int64     `json:"min_disk"`
+	CreatedAt       time.Time `json:"created_at"`
+	ImageSourceType string    `json:"__image_source_type"`
+	ContainerFormat string    `json:"container_format"`
+	File            string    `json:"file"`
+	UpdatedAt       time.Time `json:"updated_at"`
+	Protected       bool      `json:"protected"`
+	Checksum        string    `json:"checksum"`
+	ID              string    `json:"id"`
+	Isregistered    string    `json:"__isregistered"`
+	MinRamMB        int       `json:"min_ram"`
+	Lazyloading     string    `json:"__lazyloading"`
+	Owner           string    `json:"owner"`
+	OSType          string    `json:"__os_type"`
+	Imagetype       string    `json:"__imagetype"`
+	Visibility      string    `json:"visibility"`
+	VirtualEnvType  string    `json:"virtual_env_type"`
+	Platform        string    `json:"__platform"`
+	SizeGB          int       `json:"size"`
+	ImageSize       int64     `json:"__image_size"`
+	OSBit           string    `json:"__os_bit"`
+	OSVersion       string    `json:"__os_version"`
+	Name            string    `json:"name"`
+	Self            string    `json:"self"`
+	DiskFormat      string    `json:"disk_format"`
+	Status          string    `json:"status"`
+	// [CHANGED] HCS 8.6.0 新增字段：CPU架构，取值为 x86_64 或 aarch64
+	// [ORIGIN] 原始通过 __support_arm 字段（取值 "true"/"false"）间接判断是否为 arm 架构
+	Architecture string `json:"architecture"`
+	// [CHANGED] HCS 8.6.0 新增字段：固件类型，取值为 bios 或 uefi
+	// [ORIGIN] 原始通过 normalize 工具从镜像名称/平台信息推断固件类型
+	HwFirmwareType         string `json:"hw_firmware_type"`
+	SupportKVMFPGAType     string `json:"__support_kvm_fpga_type"`
+	SupportKVMNVMEHIGHIO   string `json:"__support_nvme_highio"`
+	SupportLargeMemory     string `json:"__support_largememory"`
+	SupportDiskIntensive   string `json:"__support_diskintensive"`
+	SupportHighPerformance string `json:"__support_highperformance"`
+	SupportXENGPUType      string `json:"__support_xen_gpu_type"`
+	SupportKVMGPUType      string `json:"__support_kvm_gpu_type"`
+	SupportGPUT4           string `json:"__support_gpu_t4"`
+	SupportKVMAscend310    string `json:"__support_kvm_ascend_310"`
+	SupportArm             string `json:"__support_arm"` // [ORIGIN] 旧版架构判断字段，HCS 8.6.0 由 architecture 字段替代，保留用于兼容
+	// [CHANGED] HCS 8.6.0 新增字段：KVM Infiniband 网卡支持标识
+	SupportKVMInfiniband string `json:"__support_kvm_infiniband"`
 }
 
 func (self *SImage) GetMinRamSizeMb() int {
@@ -169,7 +177,13 @@ func (self *SImage) GetSizeByte() int64 {
 func (self *SImage) getNormalizedImageInfo() *imagetools.ImageInfo {
 	if self.imgInfo == nil {
 		arch := "x86"
-		if strings.ToLower(self.SupportArm) == "true" {
+		// [ORIGIN] 原始逻辑：仅通过 __support_arm 字段判断架构
+		// if strings.ToLower(self.SupportArm) == "true" {
+		// 	arch = "arm"
+		// }
+		// [CHANGED] HCS 8.6.0 新增 architecture 字段（取值 x86_64 或 aarch64），优先使用；
+		// 同时保留对旧字段 __support_arm 的兼容，以适配无 architecture 字段的旧版本环境
+		if self.Architecture == "aarch64" || strings.ToLower(self.SupportArm) == "true" {
 			arch = "arm"
 		}
 		imgInfo := imagetools.NormalizeImageInfo(self.ImageSourceType, arch, self.OSType, self.Platform, "")
@@ -200,10 +214,24 @@ func (self *SImage) GetOsLang() string {
 }
 
 func (self *SImage) GetOsArch() string {
+	// [ORIGIN] 原始逻辑：通过 normalize 工具从镜像元数据推断架构
+	// return self.getNormalizedImageInfo().OsArch
+	// [CHANGED] HCS 8.6.0 响应中新增 architecture 字段（取值 x86_64 或 aarch64），直接使用；
+	// 无此字段时（旧版本环境）回退到原始 normalize 逻辑
+	if len(self.Architecture) > 0 {
+		return self.Architecture
+	}
 	return self.getNormalizedImageInfo().OsArch
 }
 
 func (i *SImage) GetBios() cloudprovider.TBiosType {
+	// [ORIGIN] 原始逻辑：通过 normalize 工具从镜像元数据推断 BIOS 类型
+	// return cloudprovider.ToBiosType(i.getNormalizedImageInfo().OsBios)
+	// [CHANGED] HCS 8.6.0 响应中新增 hw_firmware_type 字段（取值 bios 或 uefi），优先使用；
+	// 无此字段时（旧版本环境）回退到原始 normalize 逻辑
+	if len(i.HwFirmwareType) > 0 {
+		return cloudprovider.ToBiosType(i.HwFirmwareType)
+	}
 	return cloudprovider.ToBiosType(i.getNormalizedImageInfo().OsBios)
 }
 
@@ -362,6 +390,15 @@ func (self *SRegion) ImportImageJob(name string, osDist string, osVersion string
 	params.Add(jsonutils.NewBool(true), "is_config_init")
 	params.Add(jsonutils.NewBool(true), "is_config")
 	params.Add(jsonutils.NewInt(minDiskGB), "min_disk")
+	// [CHANGED] HCS 8.6.0 制作镜像接口新增以下参数：
+	// virtual_env_type: 明确指定镜像环境类型为 FusionCompute（弹性云服务器镜像）
+	params.Add(jsonutils.NewString("FusionCompute"), "virtual_env_type")
+	// architecture: HCS 8.6.0 新增字段，指定 CPU 架构（x86_64 或 aarch64）
+	// [ORIGIN] 原始代码未传入 virtual_env_type 和 architecture 参数
+	hcsArch := archToHCS(osArch)
+	if len(hcsArch) > 0 {
+		params.Add(jsonutils.NewString(hcsArch), "architecture")
+	}
 
 	ret, err := self.ecsClient.Images.PerformAction2("action", "", params, "")
 	if err != nil {
@@ -369,6 +406,17 @@ func (self *SRegion) ImportImageJob(name string, osDist string, osVersion string
 	}
 
 	return ret.GetString("job_id")
+}
+
+// archToHCS 将内部架构标识转换为 HCS 8.6.0 IMS 接口所需的架构字段值（x86_64 或 aarch64）
+func archToHCS(osArch string) string {
+	switch osArch {
+	case "64", apis.OS_ARCH_X86_64, "x86":
+		return "x86_64"
+	case apis.OS_ARCH_AARCH64, apis.OS_ARCH_ARM, "arm64":
+		return "aarch64"
+	}
+	return ""
 }
 
 func formatVersion(osDist string, osVersion string) (string, error) {

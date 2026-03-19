@@ -42,6 +42,10 @@ type SVpc struct {
 	CIDR                string `json:"cidr"`
 	Status              string `json:"status"`
 	EnterpriseProjectID string `json:"enterprise_project_id"`
+	// [CHANGED] HCS 8.6.0 新增字段
+	// [ORIGIN] 原始结构体无以下字段
+	Description string `json:"description"` // VPC 描述信息
+	ExtendCidr  string `json:"extend_cidr"`  // VPC 扩展网段
 }
 
 func (self *SVpc) addWire(wire *SWire) {

@@ -52,6 +52,8 @@ type IpAddress struct {
 	OSEXTIPSMACMACAddr string `json:"OS-EXT-IPS-MAC:mac_addr"`
 	OSEXTIPSPortID     string `json:"OS-EXT-IPS:port_id"`
 	OSEXTIPSType       string `json:"OS-EXT-IPS:type"`
+	// [CHANGED] HCS 8.6.0 新增：网络标签列表
+	NetworkTags []string `json:"network_tags"`
 }
 
 type Flavor struct {
@@ -84,6 +86,10 @@ type OSExtendedVolumesVolumesAttached struct {
 	BootIndex           string `json:"bootIndex"`
 	ID                  string `json:"id"`
 	DeleteOnTermination string `json:"delete_on_termination"`
+	// [CHANGED] HCS 8.6.0 新增字段
+	// [ORIGIN] 原始结构体无以下字段
+	HwPassthrough string `json:"hw:passthrough"` // 磁盘模式：false=VBD，true=SCSI
+	Multiattach   string `json:"multiattach"`    // 是否为共享磁盘
 }
 
 type OSSchedulerHints struct {
@@ -96,6 +102,13 @@ type SecurityGroup struct {
 type SysTag struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
+}
+
+// [CHANGED] HCS 8.6.0 新增：虚拟密码卡设备信息
+type VirtualCipherCardDevice struct {
+	UUID string `json:"uuid"`
+	Name string `json:"name"`
+	MAC  string `json:"mac"`
 }
 
 // https://support.huaweicloud.com/api-ecs/zh-cn_topic_0094148849.html
@@ -151,6 +164,11 @@ type SInstance struct {
 	SysTags                          []SysTag                           `json:"sys_tags"`
 	SecurityGroups                   []SecurityGroup                    `json:"security_groups"`
 	EnterpriseProjectId              string
+	// [CHANGED] HCS 8.6.0 新增字段
+	// [ORIGIN] 原始结构体无以下字段
+	OSEXTSRVATTROsHostname    string                     `json:"OS-EXT-SRV-ATTR:os_hostname"`    // 云服务器内部hostname
+	SystemSerialNumber        string                     `json:"system_serial_number"`            // 云服务器 serial number
+	VirtualCipherCardDevice   []VirtualCipherCardDevice  `json:"virtual_cipher_card_device"`      // 虚拟密码卡设备信息
 }
 
 func compareSet(currentSet []string, newSet []string) (add []string, remove []string, keep []string) {
