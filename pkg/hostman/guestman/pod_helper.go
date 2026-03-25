@@ -230,7 +230,7 @@ func (t *localPodRestartTask) Run() {
 			log.Errorf("start container %s err: %s", ctr.Id, err.Error())
 		}
 	}
-	t.pod.SyncStatus("sync status after pod and containers restart locally")
+	t.pod.SyncStatus("sync status after pod and containers restart locally", "")
 }
 
 func (t *localPodRestartTask) Dump() string {
@@ -304,6 +304,10 @@ func (m *SCpuFreqRealTimeSimulateManager) startSetCpuFreqSimulate() {
 			ctr, err := pod.GetContainerByCRIId(criIds[i])
 			if err != nil {
 				log.Errorf("failed get %s ctrid by criId %s", pod.GetName(), criIds[i])
+				continue
+			}
+			if ctr == nil {
+				log.Errorf("found nil container desc by criId %s in pod %s", criIds[i], pod.GetName())
 				continue
 			}
 			cpuDir := pod.getContainerSystemCpusDir(ctr.Id)
